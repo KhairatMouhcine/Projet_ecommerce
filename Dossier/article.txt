@@ -1,0 +1,10 @@
+Référence : 1
+Nom : art1
+Prix : 14 dhs
+Quantité en stock : 14
+-------------------------
+Référence : 2
+Nom : art2
+Prix : 15 dhs
+Quantité en stock : 100
+-------------------------
