@@ -1,0 +1,211 @@
+auto it = find_if(users.begin(), users.end(), [&](const User& user) {
+        return user.seConnecter(inputEmail, inputPassword);
+    });
+
+    if (it != users.end()) {
+        cout << "Connexion réussie !" << endl;
+        utilisateurId = it->getId();
+            if(it->getRole() == "client"){
+                Panier panier(utilisateurId);
+                int choix;
+                string reference;
+                    do {
+                            afficherMenu();
+        cout << "Entrez votre choix : ";
+        cin >> choix;
+
+        switch (choix) {
+            case 0: {
+                afficherTousLesArticles(listeArticles);
+                break;
+            }
+            case 1: {
+                string ref;
+                cout << "Entrez la référence de l'article à ajouter : ";
+                cin >> ref;
+
+                optional<Article> article = rechercherArticleParRef(listeArticles, ref);
+                if (article) {
+                    panier.ajouterArticle(*article);
+                } else {
+                    cout << "Article non trouvé." << endl;
+                }
+                break;
+            }
+            case 2: {
+                string ref;
+                int nouvelleQuantite;
+                cout << "Entrez la référence de l'article : ";
+                cin >> ref;
+                cout << "Entrez la nouvelle quantité : ";
+                cin >> nouvelleQuantite;
+
+                optional<Article> article = rechercherArticleParRef(listeArticles, ref);
+                if (article) {
+                    panier.modifierQuantiteArticle(*article, nouvelleQuantite);
+                } else {
+                    cout << "Article non trouvé." << endl;
+                }
+                break;
+            }
+            case 3:
+                panier.viderPanier();
+                cout << "Panier vidé." << endl;
+                break;
+            case 4: {
+                cout << "Contenu du panier :" << endl;
+                for (const auto& [article, quantite] : panier.getArticles()) {
+                    cout << "Référence : " << article.getReference() << ", Article : " << article.getName() << ", Quantité : " << quantite << endl;
+                }
+                cout << "Montant total : " << panier.getMontantTotal() << " dhs" << endl;
+                break;
+            }
+            case 5: {
+                cout << "Articles triés par prix :" << endl;
+                auto articlesTries = panier.getArticlesTriesParPrix();
+                for (const auto& [article, quantite] : articlesTries) {
+                    cout << "Référence : " << article.getReference() << ", Article : " << article.getName() << ", Prix : " << article.getPrix() << " dhs, Quantité : " << quantite << endl;
+                }
+                break;
+            }
+            case 6: {
+                cout << "Montant total avec remise (si applicable) : " << panier.getMontantTotal() << " dhs" << endl;
+                break;
+            }
+            case 7: {
+                try {
+                    auto [article, quantite] = panier.getArticleLePlusCher();
+                    cout << "Article le plus cher : Référence : " << article.getReference() << ", Article : " << article.getName() << ", Prix : " << article.getPrix() << " dhs, Quantité : " << quantite << endl;
+                } catch (const runtime_error& e) {
+                    cout << e.what() << endl;
+                }
+                break;
+            }
+            case 8: {
+                double prixMin, prixMax;
+                cout << "Entrez le prix minimum : ";
+                cin >> prixMin;
+                cout << "Entrez le prix maximum : ";
+                cin >> prixMax;
+
+                auto articlesDansTranche = panier.getArticlesDansTrancheDePrix(prixMin, prixMax);
+                if (articlesDansTranche.empty()) {
+                    cout << "Aucun article trouvé dans cette tranche de prix." << endl;
+                } else {
+                    cout << "Articles dans la tranche de prix :" << endl;
+                    for (const auto& [article, quantite] : articlesDansTranche) {
+                        cout << "Référence : " << article.getReference() << ", Article : " << article.getName() << ", Prix : " << article.getPrix() << " dhs, Quantité : " << quantite << endl;
+                    }
+                }
+                break;
+            }
+            case 9: {
+                        Commande nouvelleCommande = panier.validerCommande();
+                        ajouterCommande(nouvelleCommande);
+                        cout << "Commande validée avec succès." << endl;
+                        break;
+            }
+            case 10: {
+                        afficherCommandesParUtilisateur(utilisateurId);
+                        break;
+            }
+            case 11:
+                cout << "Au revoir !" << endl;
+                break;
+            default:
+                cout << "Choix invalide." << endl;
+                break;
+                            }
+                        } while (choix != 5);
+            }else{
+                while (true) {
+        cout << "Menu :" << endl;
+        cout << "1. Ajouter un nouvel article" << endl;
+        cout << "2. Rechercher un article par référence" << endl;
+        cout << "3. Mettre à jour un article par référence" << endl;
+        cout << "4. Supprimer un article par référence" << endl;
+        cout << "5. Afficher tous les articles" << endl;
+        cout << "6. Quitter" << endl;
+
+        int choix;
+        cout << "Choisissez une option : ";
+        cin >> choix;
+
+        switch (choix) {
+            case 1: {
+               cout << "Nouvel article" << endl;
+               cout << "Veuillez saisir le nom de l'article : ";
+               cin.ignore();
+               string nom;
+               getline(cin, nom);
+               cout << "Référence : ";
+               string ref;
+               cin >> ref;
+               cout << "Prix : ";
+               double prix;
+               cin >> prix;
+               cout << "Quantité en stock : ";
+               int quantite;
+               cin >> quantite;
+               Article nouvelArticle(nom, ref, prix, quantite);
+               ajouterArticle(listeArticles, nouvelArticle);
+               break;
+            }
+            case 2: {
+                cout << "Référence de l'article à rechercher : ";
+                string ref;
+                cin >> ref;
+
+                optional<Article> articleOptional = rechercherArticleParRef(listeArticles, ref);
+                if (articleOptional.has_value()) {
+                    Article article = articleOptional.value();
+                    afficherArticle(article);
+                } else {
+                    cout << "Article non trouvé." << endl;
+                }
+                break;
+            }
+            case 3: {
+                cout << "Référence de l'article à mettre à jour : ";
+                string ref;
+                cin >> ref;
+
+                cout << "Nouveau nom : ";
+                string nom;
+                cin >> nom;
+
+                cout << "Nouveau prix : ";
+                double prix;
+                cin >> prix;
+
+                cout << "Nouvelle quantité en stock : ";
+                int quantite;
+                cin >> quantite;
+
+                updateArticleParRef(listeArticles, ref, nom,prix, quantite);
+                break;
+            }
+            case 4: {
+                cout << "Référence de l'article à supprimer : ";
+                string ref;
+                cin >> ref;
+
+                supprimerArticleParRef(listeArticles, ref);
+                break;
+            }
+            case 5: {
+                afficherTousLesArticles(listeArticles);
+                break;
+            }
+            case 6: {
+                cout << "Au revoir !" << endl;
+                return 0;
+            }
+            default:
+                cout << "Option invalide. Veuillez réessayer." << endl;
+        }
+    }
+            }
+    } else {
+        cout << "Email ou mot de passe incorrect." << endl;
+    }
